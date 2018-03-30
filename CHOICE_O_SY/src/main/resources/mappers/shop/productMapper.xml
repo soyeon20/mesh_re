@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 다른 mapper와 중복되지 않도록 네임스페이스 기재 -->
+<mapper namespace="product">
+	
+	<!-- 01. 음식점 전체 리스트 -->
+	<select id="listProduct" resultType="com.choice.food.model.shop.dto.ProductVO">
+		SELECT  
+			restaurant_ID AS productId
+			,restaurant_NM AS productName
+			,PRICE_RANGE AS productPrice 
+			,restaurant_DESC AS productDesc
+			,IMG_URL AS productUrl
+			,restaurant_CATEGORY AS productCategory
+			,restaurant_DISTANCE AS productDistance
+			,restaurant_TEL AS productTel
+		FROM tbl_restaurant
+		<include refid="search"></include>
+		
+
+	<!-- 01-1. 검색 리스트  -->
+	</select>
+		<select id="listFood" resultType="com.choice.food.model.food.dto.FoodVO">
+		SELECT  
+			product_id
+			,product_name
+			,product_price
+			,product_desc	
+		FROM tbl_food
+		WHERE RESTAURANT_ID = #{productId}
+	</select>
+	
+	
+	<!-- 02. 음식점 상세보기 -->
+	<select id="detailProduct" resultType="com.choice.food.model.shop.dto.ProductVO">
+		SELECT
+			restaurant_ID AS productId 
+			,restaurant_NM AS productName 
+			,PRICE_RANGE AS productPrice 
+			,restaurant_DESC AS productDesc 
+			,IMG_URL AS productUrl
+			,restaurant_CATEGORY AS productCategory
+			,restaurant_DISTANCE AS productDistance
+			,restaurant_TEL AS productTel
+		FROM tbl_restaurant 
+		WHERE restaurant_ID = #{productId}
+	</select>
+	
+	<!-- 03. 음식점 추가하기 -->
+	<insert id="insertProduct">
+		INSERT INTO tbl_restaurant 
+		VALUES (
+			#{productName}
+			,#{productPrice}
+			,#{productDesc}
+			,#{productUrl}
+			,#{productCategory}
+			,#{productDistance}
+			,#{productTel}
+		)
+	</insert>
+	
+	<!-- 04. 음식점 수정/편집하기 -->
+	<update id="updateProduct">
+		UPDATE tbl_restaurant
+		SET RESTAURANT_NM = #{productName}
+			,PRICE_RANGE = #{productPrice}
+			,RESTAURANT_DESC = #{productDesc}
+			,IMG_URL = #{productUrl}
+		WHERE
+			RESTAURANT_ID = #{productId}
+	</update>
+	
+	<!-- 05. 음식점 레코드 삭제처리 -->
+	<delete id="deleteProduct">
+		DELETE FROM tbl_restaurant
+		WHERE RESTAURANT_ID = #{productId}
+	</delete>
+	
+	<!-- 06. 삭제를 위한 음식점 이미지 파일이름 select -->
+	<select id="fileInfo" resultType="String">
+		SELECT IMG_URL AS productUrl
+		FROM tbl_restaurant
+		WHERE RESTAURANT_ID = #{productId}
+	</select>
+	
+	<sql id="search">
+		 <choose>
+        <!-- 검색옵션이 전체 검색일 경우 -->
+        <when test="searchOption == 'all'">
+            WHERE PRICE_RANGE like CONCAT('%', #{keyword}, '%')
+            OR RESTAURANT_CATEGORY like CONCAT('%', #{keyword}, '%')
+            OR RESTAURANT_DISTANCE like CONCAT('%', #{keyword}, '%')
+        </when>
+        <!-- 전체 검색이 아닐 경우 -->
+        <otherwise>
+            WHERE ${searchOption} like CONCAT('%', #{keyword}, '%')
+        </otherwise>
+    </choose>
+	</sql>
+</mapper>

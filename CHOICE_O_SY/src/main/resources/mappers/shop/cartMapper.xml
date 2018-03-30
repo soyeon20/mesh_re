@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 다른 mapper와 중복되지 않도록 네임스페이스 기재 -->
+<mapper namespace="cart">
+	<!-- 1. 식사기록 추가 -->
+	<insert id="insertCart">
+		INSERT INTO tbl_cart(
+			 user_id, product_id, amount,food_name, food_price
+		) VALUES (
+			 #{userId}, #{productId}, #{amount}, #{foodName}, #{foodPrice}
+		)
+	</insert>
+	<!-- 2. 식사기록 목록 -->
+	<select id="listCart" resultType="com.choice.food.model.shop.dto.CartVO">
+		
+		SELECT
+			c.cart_id AS cartId, 
+			c.user_id AS userId,
+			p.product_id As productId,
+			m.user_name AS userName, 
+			r.RESTAURANT_NM AS productName, 
+			c.amount,
+			c.food_price AS foodPrice,
+			c.food_name AS foodName, 
+			c.food_price AS productPrice, 
+			c.choice_dt AS choiceDt,
+			(food_price * amount) money
+			
+		FROM
+			tbl_restaurant r,tbl_member m, tbl_food p, tbl_cart c
+		WHERE m.user_id = c.user_id
+			AND r.restaurant_id = c.product_id
+			AND p.product_id = c.product_id
+			AND c.user_id = #{userId}
+		
+		ORDER BY c.cart_id
+		
+	
+
+
+	</select>
+	
+	<!-- 3. 식사기록 전체 금액 -->
+	<select id="sumMoney" resultType="int">
+		SELECT IFNULL(SUM(food_price * amount), 0) money
+		FROM 
+		  tbl_cart
+		WHERE 
+		 user_id = #{userId}
+	</select>
+	
+	<!-- 4. 식사기록 수정 -->
+	<update id="modifyCart">
+		UPDATE tbl_cart	SET amount = #{amount} 
+		WHERE user_id= #{userId} AND product_id = #{productId}
+	</update>
+	
+	
+	<!-- 5. 식사기록 삭제 -->
+	<delete id="deleteCart">
+		DELETE FROM tbl_cart WHERE cart_id = #{cartId}
+	</delete>
+	
+	<!-- 6. 식사기록이 존재하는지 확인 -->
+	<select id="countCart" resultType="int">
+		SELECT COUNT(*) FROM tbl_cart 
+		WHERE user_id= #{userId} AND product_id = #{productId}
+	</select>
+	
+	<!-- 7. 식사기록이 존재하면 수정 -->
+	<update id="updateCart">
+		UPDATE tbl_cart	SET amount = amount + #{amount} 
+		WHERE user_id= #{userId} AND product_id = #{productId}
+	</update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
